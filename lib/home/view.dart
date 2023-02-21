@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../Iot.dart';
 import 'logic.dart';
 
 class HomePage extends StatelessWidget {
@@ -62,10 +64,14 @@ class HomePage extends StatelessWidget {
                         onPressed: (){
 
                         },
-                        child: Text('sb')),
+                        child: const Text('SmartConfig配网')),
 
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
+
               ],
             ),
           ),

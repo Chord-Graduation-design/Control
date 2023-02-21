@@ -1,14 +1,13 @@
 import 'package:control/Iot.dart';
+import 'package:control/pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'home/view.dart';
-
 void main() {
   Iot().connect();
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -17,19 +16,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.log("build MyApp");
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: 'Iot Control',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: AppPages.INITIAL,
       defaultTransition: Transition.fade,
-      getPages: [
-        GetPage(
-          name: '/',
-          page: () => HomePage(),
-        ),
-      ],
+      getPages: AppPages.routes,
     );
   }
 }

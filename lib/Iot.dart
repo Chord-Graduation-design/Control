@@ -70,9 +70,16 @@ class Iot
       _update_callback_map[topic] = [callback];
     }
   }
-  void removeUpdateCallBack(String topic,void Function(String) callback) {
-    if(_update_callback_map.containsKey(topic)){
-      _update_callback_map[topic]!.remove(callback);
-    }
+  // 从不删除,所以不需要
+  // void removeUpdateCallBack(String topic,void Function(String) callback) {
+  //   if(_update_callback_map.containsKey(topic)){
+  //     _update_callback_map[topic]!.remove(callback);
+  //   }
+  // }
+
+  void publish(String topic,String msg,{MqttQos qos = MqttQos.atMostOnce}) {
+    final builder = MqttClientPayloadBuilder();
+    builder.addString(msg);
+    _client.publishMessage(topic, qos, builder.payload!);
   }
 }
