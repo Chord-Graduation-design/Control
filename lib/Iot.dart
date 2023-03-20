@@ -1,27 +1,31 @@
+import 'dart:typed_data';
+
+import 'package:control/protos/msg.pb.dart';
 import 'package:get/get.dart';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:mqtt5_client/mqtt5_client.dart';
+import 'package:mqtt5_client/mqtt5_server_client.dart';
+import 'package:typed_data/src/typed_buffer.dart';
 
 
 class Iot
 {
   static final Iot _iot = Iot._internal();
+  static const String InTopic = "esp32/InTopic";
   Iot._internal();
   factory Iot() => _iot;
 
   late MqttServerClient _client;
-  late Map<String,List<void Function(String)>> _update_callback_map = Map();
+  late Map<String,List<void Function(Uint8List)>> _update_callback_map = Map();
   Future<void> connect() async {
     Get.log("Iot connect");
     String identifier = "Esp32-Client-";
-    _client = MqttServerClient.withPort("81.68.127.168", identifier, 1883);
+    _client = MqttServerClient.withPort("47.113.151.63", identifier, 1883);
     _client.logging(on: false);
     _client.keepAlivePeriod = 60;
     _client.autoReconnect = true;
     _client.onDisconnected = _onDisconnected;
     _client.onConnected = _onConnected;
     _client.onAutoReconnect = _onAutoReconnect;
-    _client.setProtocolV311();
     try {
       await _client.connect();
     } catch (e) {
@@ -29,10 +33,11 @@ class Iot
       _client.disconnect();
     }
     if (_client.connectionStatus!.state == MqttConnectionState.connected) {
-      _client.updates!.listen(_onUpdated);
+      _client.updates.listen(_onUpdated);
     }
   }
   void _onConnected(){
+
     Get.log("Connected");
   }
   void _onDisconnected(){
@@ -44,26 +49,26 @@ class Iot
   Future<void> subscribe(String topic,{MqttQos qos = MqttQos.atMostOnce}) async{
     //等待连接成功!
     while(_client.connectionStatus!.state != MqttConnectionState.connected){
-      await Future.delayed(Duration(seconds: 1));
+      //等tm 一秒钟
+      await Future.delayed(const Duration(seconds: 1));
     }
     //订阅
     _client.subscribe(topic, qos);
   }
   void _onUpdated(List<MqttReceivedMessage<MqttMessage>> c) {
     final recMess = c[0].payload as MqttPublishMessage;
-    final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    Get.log('topic is <${c[0].topic}>, payload is <-- $pt -->');
-    Get.log(' ');
+    final pt = MqttUtilities.bytesToStringAsString(recMess.payload.message!);
     //判断是否拥有该topic的回调
     if(_update_callback_map.containsKey(c[0].topic)){
       //执行回调
       _update_callback_map[c[0].topic]!.forEach((element) {
-        element(pt);
+        late Uint8Buffer? message = recMess.payload.message;
+        element(Uint8List.view(message!.buffer,0,message!.length));
       });
     }
   }
   //添加订阅回调到列表
-  void addUpdateCallBack(String topic,void Function(String) callback) {
+  void addUpdateCallBack(String topic,void Function(Uint8List) callback) {
     if(_update_callback_map.containsKey(topic)){
       _update_callback_map[topic]!.add(callback);
     }else{
@@ -77,9 +82,17 @@ class Iot
   //   }
   // }
 
-  void publish(String topic,String msg,{MqttQos qos = MqttQos.atMostOnce}) {
-    final builder = MqttClientPayloadBuilder();
-    builder.addString(msg);
-    _client.publishMessage(topic, qos, builder.payload!);
+
+
+  //发布消息
+  Future<void> publish(String topic,Uint8List msg,{MqttQos qos = MqttQos.atMostOnce}) async {
+    //等待连接成功!
+    while(_client.connectionStatus!.state != MqttConnectionState.connected){
+      //等tm 一秒钟
+      await Future.delayed(const Duration(seconds: 1));
+    }
+    final payload = Uint8Buffer();
+    payload.addAll(msg);
+    _client.publishMessage(topic, qos, payload);
   }
 }
