@@ -58,7 +58,7 @@ class MainPage extends StatelessWidget {
 
           //设置
           SalomonBottomBarItem(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.settings),
             title: const Text("设置 ",
               style: TextStyle(
                 fontFamily: "SmileySans",

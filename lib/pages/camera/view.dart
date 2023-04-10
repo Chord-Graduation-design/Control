@@ -17,15 +17,15 @@ class CameraPage extends StatelessWidget {
         ),
         body: Stack(
           children: [
-
-              AspectRatio(
+            SizedBox( width:double.infinity, height: double.infinity,
+              child: AspectRatio(
                 aspectRatio: logic.controller.value!.value.aspectRatio,
                 child: CameraPreview(
-                    logic.controller.value!,
-
+                  logic.controller.value!,
                 ),
+              ),
+            ),
 
-            )
           ],
         ),
       ) :

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -103,42 +105,122 @@ class HomePage extends StatelessWidget {
                               children: [
                                 SmartSystem(
                                   color: const Color(0xffE9D7FF),
-                                  title: 'LED 开关',
+                                  title: '窗帘 开关',
                                   imageUrl: 'assets/images/icons8-light-96.png',
-                                  onTap: () {},
-                                  child: Switch(
-                                    value:true,
-                                    onChanged: (value) {
-                                      Get.log("LED Switch");
-                                    },
-                                  ),
-                                ),
-                                SmartSystem(
-                                  color: const Color(0xffD9EEFF),
-                                  title: '窗开关',
-                                  imageUrl:
-                                  'assets/images/icons8-rgb-lamp-96.png',
                                   onTap: () => Get.dialog(
                                     AlertDialog(
                                       title: const Center(
                                           child:Text(
-                                            '窗控制',
+                                            '窗帘 控制',
                                             style: TextStyle(
                                               fontFamily: 'SmileySans',
                                               fontWeight: FontWeight.w100,
                                             ),
                                           )
                                       ),
-                                      content: Obx(()=>Slider(
-                                        value: logic.servo_angle.value.toDouble(),
-                                        min: 0,
-                                        max: 360,
-                                        divisions: 360,
-                                        label: logic.servo_angle.value.toString(),
-                                        onChanged: (value) {
-                                          logic.servo_angle.value = value.toInt();
-                                        },
-                                      )),
+                                      content: Obx((){
+                                        late double value = logic.servo_angle.value.toDouble();
+                                        if(value < 0) {
+                                          value = 0;
+                                        } else if(value > 180) {
+                                          value = 180;
+                                        }
+                                        return SizedBox(
+                                            height: 20,
+                                            child:Slider(
+                                              value: value,
+                                              min: 0,
+                                              max: 180,
+                                              divisions: 60,
+                                              label: value.toString(),
+                                              onChanged: (value) {
+                                                // logic.servo_angle.value = value.toInt();
+                                                //
+
+                                                if (logic.servo_angle.value == value.toInt()) {
+                                                  return;
+                                                }
+                                                logic.servo_angle.value = value.toInt();
+                                                // Get.log("Servo Angle: ${value.toInt()}");
+                                                SensorIn msg = SensorIn()..type = SensorType.SERVO;
+                                                msg.tick = value.toInt();
+                                                Iot().publish(Iot.InTopic,msg.writeToBuffer());
+
+
+                                              },
+                                            ));
+                                      }),
+                                      actions: [
+                                        Center(
+                                            child: ElevatedButton  (
+                                              onPressed: () => Get.back(),
+                                              child: const Text('确定'),
+                                            )
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  child: Obx(()=>Switch(
+                                    value:logic.servo_angle.value > 160,
+                                    onChanged: (value) {
+                                      SensorIn msg = SensorIn()..type = SensorType.SERVO;
+                                      if(value) {
+                                        msg.tick = 180;
+                                      } else {
+                                        msg.tick = 0;
+                                      }
+                                      Iot().publish(Iot.InTopic,msg.writeToBuffer());
+                                    },
+                                  )),
+                                ),
+                                SmartSystem(
+                                  color: const Color(0xffD9EEFF),
+                                  title: '窗户 开关',
+                                  imageUrl:
+                                  'assets/images/icons8-rgb-lamp-96.png',
+                                  onTap: () => Get.dialog(
+                                    AlertDialog(
+                                      title: const Center(
+                                          child:Text(
+                                            '窗户 控制',
+                                            style: TextStyle(
+                                              fontFamily: 'SmileySans',
+                                              fontWeight: FontWeight.w100,
+                                            ),
+                                          )
+                                      ),
+                                      content: Obx((){
+                                        late double value = logic.servo_angle.value.toDouble();
+                                        if(value < 0) {
+                                          value = 0;
+                                        } else if(value > 180) {
+                                          value = 180;
+                                        }
+                                        return SizedBox(
+                                          height: 20,
+                                            child:Slider(
+                                            value: value,
+                                            min: 0,
+                                            max: 180,
+                                            divisions: 60,
+                                            label: value.toString(),
+                                            onChanged: (value) {
+                                              // logic.servo_angle.value = value.toInt();
+                                              //
+
+                                              if (logic.servo_angle.value == value.toInt()) {
+                                                return;
+                                              }
+                                              logic.servo_angle.value = value.toInt();
+                                              // Get.log("Servo Angle: ${value.toInt()}");
+                                              SensorIn msg = SensorIn()..type = SensorType.SERVO;
+                                              msg.tick = value.toInt();
+                                              Iot().publish(Iot.InTopic,msg.writeToBuffer());
+
+
+                                            },
+                                          ));
+                                      }),
                                       actions: [
                                         Center(
                                             child: ElevatedButton  (
@@ -150,7 +232,7 @@ class HomePage extends StatelessWidget {
                                     ),
                                   ),
                                   child: Obx(()=>Switch(
-                                    value:logic.servo_angle.value > 200,
+                                    value:logic.servo_angle.value > 160,
                                     onChanged: (value) {
                                       SensorIn msg = SensorIn()..type = SensorType.SERVO;
                                       if(value) {
@@ -171,7 +253,7 @@ class HomePage extends StatelessWidget {
                                 SmartSystem(
                                   color: const Color(0xffFFE28B),
                                   title: 'LED 开关',
-                                  imageUrl: 'assets/images/icons8-music-record-96.png',
+                                  imageUrl:'assets/images/icons8-rgb-lamp-96.png',
                                   onTap: () {},
                                   child: Obx(()=>Switch(
                                     value:logic.led_switch.value,

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:control/protos/msg.pb.dart';
@@ -18,7 +19,12 @@ class Iot
   late Map<String,List<void Function(Uint8List)>> _update_callback_map = Map();
   Future<void> connect() async {
     Get.log("Iot connect");
-    String identifier = "Esp32-Client-";
+    // 随机a-z A-Z 0-9字符 5位
+    final rand = Random.secure();
+    final values = List<int>.generate(5, (i) => rand.nextInt(33) + 89);
+    //转换成字符串
+    final str = String.fromCharCodes(values);
+    String identifier = "app-client-$str";
     _client = MqttServerClient.withPort("47.113.151.63", identifier, 1883);
     _client.logging(on: false);
     _client.keepAlivePeriod = 60;

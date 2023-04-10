@@ -40,9 +40,11 @@ dependencies:
   google_fonts: ^4.0.3
 #  yolo:
 #    path: yolo
+  esp_smartconfig: ^1.1.11
   camera: ^0.10.3+1
   protobuf: ^2.1.0
   salomon_bottom_bar: ^3.3.1
+  network_info_plus: ^3.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
